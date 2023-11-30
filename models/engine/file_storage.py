@@ -15,21 +15,24 @@ class FileStorage:
 
     def all(self, cls=None):
         '''
-        Return the dictionary
+            Return the dictionary
         '''
-        if cls:
-            my_dict = {}
-            for key, value in self.__objects.items():
-                if value.__class__ == cls:
-                    my_dict[key] = value
-            return my_dict
-        return self.__objects
+        obje = {}
+        if cls is None:
+            return (self.__objects)
+        else:
+            if type(cls) is str:
+                cls = models.classes[cls]
+            for key, val in self.__objects.items():
+                if cls.__name__ == val.__class__.__name__:
+                    obje[key] = val
+            return (obje)
 
     def new(self, obj):
         '''
-        Set in __objects the obj with key <obj class name>.id
-        Aguments:
-        obj : An instance object.
+            Set in __objects the obj with key <obj class name>.id
+            Aguments:
+                obj : An instance object.
         '''
         key = str(obj.__class__.__name__) + "." + str(obj.id)
         value_dict = obj
@@ -37,7 +40,7 @@ class FileStorage:
 
     def save(self):
         '''
-        Serializes __objects attribute to JSON file.
+            Serializes __objects attribute to JSON file.
         '''
         objects_dict = {}
         for key, val in FileStorage.__objects.items():
@@ -45,6 +48,17 @@ class FileStorage:
 
         with open(FileStorage.__file_path, mode='w', encoding="UTF8") as fd:
             json.dump(objects_dict, fd)
+
+    def delete(self, obj=None):
+        """
+        Public instance method to delete obj from the __objects
+        """
+        if not obj:
+            return
+        key = '{}.{}'.format(type(obj).__name__, obj.id)
+        if key in self.__objects:
+            del self.__objects[key]
+            self.save()
 
     def reload(self):
         '''
@@ -61,14 +75,7 @@ class FileStorage:
             pass
 
     def close(self):
+        """
+        Reload objects from JSON file
+        """
         self.reload()
-
-    def delete(self, obj=None):
-        """
-        Public instance method to delete obj from __objects
-        """
-        copy = dict(FileStorage.__objects)
-        for key, value in copy.items():
-            if value == obj:
-                del FileStorage.__objects[key]
-            self.save()

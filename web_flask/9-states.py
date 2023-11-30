@@ -1,33 +1,40 @@
 #!/usr/bin/python3
-"""The / route"""
+"""Show states and cities by state views"""
+from flask import Flask, render_template, g
+import models
+from models.state import State
 
-if __name__ == "__main__":
-    from models import storage
-    from models.state import State
-    from flask import Flask
-    import flask
 
-    app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
-    @app.route('/states/', defaults={"id": None}, strict_slashes=False)
-    @app.route('/states/<id>', strict_slashes=False)
-    def states_list(id):
-        """list states from database"""
-        validid = 0
-        states = storage.all(State).values()
-        if id is None:
-            validid = 1
-        else:
-            for state in states:
-                if id == state.id:
-                    validid = 1
-                    break
-        return flask.render_template('9-states.html', idnum=id,
-                                     states=storage.all(State),
-                                     validid=validid)
 
-    app.run(host='0.0.0.0')
+@app.route('/states', strict_slashes=False)
+def list_states():
+    """view that lists all of the states"""
+    id = None
+    states = models.storage.all(State).values()
+    return render_template('9-states.html', states=states, id=id)
 
-    @app.teardown_appcontext
-    def teardown_appcontext(exception):
-        storage.close()
+
+@app.route('/states/<id>', strict_slashes=False)
+def list_state_cities(id=None):
+    """view that lists all cities by their states"""
+    found = False
+    states = models.storage.all(State).values()
+    for state in states:
+        if state.id == id:
+            found = True
+            states = [state]
+    if found is False:
+        states = []
+    return render_template('9-states.html', states=states, id=id)
+
+
+@app.teardown_appcontext
+def tear_down(error):
+    """remove the current SQLAlchemy Session"""
+    models.storage.close()
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

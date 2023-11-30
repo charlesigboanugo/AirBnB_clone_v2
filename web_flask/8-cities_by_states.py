@@ -1,22 +1,25 @@
 #!/usr/bin/python3
-"""The / route"""
+"""Return string when navigating to root dir"""
+from flask import Flask, render_template, g
+import models
+from models.state import State
 
-if __name__ == "__main__":
-    from models import storage
-    from models.state import State
-    from flask import Flask
-    import flask
 
-    app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
-    @app.route('/cities_by_states/', strict_slashes=False)
-    def states_list():
-        """list states from database"""
-        return flask.render_template('8-cities_by_states.html',
-                                     states=storage.all(State))
 
-    app.run(host='0.0.0.0')
+@app.route('/cities_by_states', strict_slashes=False)
+def list_state_cities():
+    """view that lists all cities by their states"""
+    states = models.storage.all(State).values()
+    return render_template('8-cities_by_states.html', states=states)
 
-    @app.teardown_appcontext
-    def teardown_appcontext(exception):
-        storage.close()
+
+@app.teardown_appcontext
+def tear_down(error):
+    """remove the current SQLAlchemy Session"""
+    models.storage.close()
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

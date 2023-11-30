@@ -1,42 +1,49 @@
 #!/usr/bin/python3
-"""The / route"""
+"""Return string when navigating to root dir"""
+from flask import Flask, render_template
 
 
-if __name__ == "__main__":
-    from flask import Flask
-    import flask
+app = Flask(__name__, template_folder='templates')
 
-    app = Flask(__name__)
 
-    @app.route('/', strict_slashes=False)
-    def hello_hbnb():
-        """root folder route"""
-        return "Hello HBNB!"
+@app.route('/', strict_slashes=False)
+def hello_holberton():
+    """Return Hello HBNB"""
+    return "Hello HBNB!"
 
-    @app.route('/hbnb', strict_slashes=False)
-    def hbnb_route():
-        """/hbnb/ folder route"""
-        return "HBNB"
 
-    @app.route('/c/<text>', strict_slashes=False)
-    def c_route(text):
-        """output some text depending on url after /c/"""
-        return "C " + text.replace('_', ' ')
+@app.route('/hbnb', strict_slashes=False)
+def hello_hnb():
+    """Return HBNB"""
+    return "HBNB"
 
-    @app.route('/python/', defaults={'text': "is cool"}, strict_slashes=False)
-    @app.route('/python/<text>', strict_slashes=False)
-    def python_route(text):
-        """output some text depending on url after /python/"""
-        return "Python " + text.replace('_', ' ')
 
-    @app.route('/number/<int:n>', strict_slashes=False)
-    def number_route(n):
-        """output some number depending on url after /number/"""
-        return str(n) + " is a number"
+@app.route('/c/<text>', strict_slashes=False)
+def cisfun(text):
+    """Route /c/<text> returns C message"""
+    text = text.replace('_', ' ')
+    return "C {}".format(text)
 
-    @app.route('/number_template/<int:n>', strict_slashes=False)
-    def number_template(n):
-        """output some number depending on url after /number/"""
-        return flask.render_template('5-number.html', n=n)
 
-    app.run(host='0.0.0.0')
+@app.route('/python', strict_slashes=False)
+@app.route('/python/<text>', strict_slashes=False)
+def pythonisbest(text="is cool"):
+    """Route /python/(<text>) returns Python message"""
+    text = text.replace('_', ' ')
+    return "Python {}".format(text)
+
+
+@app.route('/number/<int:n>', strict_slashes=False)
+def isint(n):
+    """Route /number/<n> returns int status message"""
+    return "{} is a number".format(n)
+
+
+@app.route('/number_template/<int:n>', strict_slashes=False)
+def inttemplate(n):
+    """Route /number_template/<n> sends integer to template"""
+    return render_template('5-number.html', n=n)
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
